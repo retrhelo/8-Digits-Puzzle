@@ -19,7 +19,10 @@ Situ *create_root(int board[3][3]) {
 	/* initialize pointers */
 	begin->parent = NULL;
 	begin->level = 0;
+	begin->sign = 0;
 	evaluate(begin);
+	for (i = 0; i < 4; i ++) 
+		begin->child[i] = NULL;
 
 	return begin;
 }
@@ -98,23 +101,27 @@ Situ *_copy_Situ(Situ *parent) {
 		tmp = (Situ*)malloc(sizeof(Situ));
 		if (!tmp) 
 			return NULL;
-		for (i = 0; i < 3; i ++) 
+		for (i = 0; i < 3; i ++)	/* copy the board */ 
 			for (j = 0; j < 3; j ++) 
 				tmp->board[i][j] = parent->board[i][j];
 		tmp->level = parent->level + 1;
 		evaluate(tmp);
 		tmp->parent = parent;
+		tmp->sign = 0;
+		for (i = 0; i < 4; i ++) 
+			tmp->child[i] = NULL;
 	}
 
 	return tmp;
 }
 
 void generate_child(Situ *s) {
-	if (s == NULL) 
-		return ;
 	int i, j;
+	int num_of_child = 0;
 	Situ *tmp;
 
+	if (s == NULL) 
+		return ;
 	/* find the location of '0' */
 	for (i = 0; i < 3; i ++) 
 		for (j = 0; j < 3; j ++) 
@@ -129,7 +136,7 @@ void generate_child(Situ *s) {
 			if (!_appears(s)) {
 				tmp = _copy_Situ(s);
 				if (tmp) 
-					push(open, tmp);
+					s->child[num_of_child ++] = tmp;
 				else 
 					fprintf(stderr, "failed to generate a child situation\n");
 			}
@@ -140,7 +147,7 @@ void generate_child(Situ *s) {
 			if (!_appears(s)) {
 				tmp = _copy_Situ(s);
 				if (tmp) 
-					push(open, tmp);
+					s->child[num_of_child ++] = tmp;
 				else 
 					fprintf(stderr, "failed to generate a child situation\n");
 			}
@@ -150,7 +157,7 @@ void generate_child(Situ *s) {
 			if (!_appears(s)) {
 				tmp = _copy_Situ(s);
 				if (tmp) 
-					push(open, tmp);
+					s->child[num_of_child ++] = tmp;
 				else 
 					fprintf(stderr, "struct.c: generate_child(): failed to generate a child\n");
 			}
@@ -169,7 +176,7 @@ void generate_child(Situ *s) {
 			if (!_appears(s)) {
 				tmp = _copy_Situ(s);
 				if (tmp) 
-					push(open, tmp);
+					s->child[num_of_child ++] = tmp;
 				else 
 					fprintf(stderr, "failed to generate a child\n");
 			}
@@ -180,7 +187,7 @@ void generate_child(Situ *s) {
 			if (!_appears(s)) {
 				tmp = _copy_Situ(s);
 				if (tmp) 
-					push(open, tmp);
+					s->child[num_of_child ++] = tmp;
 				else 
 					fprintf(stderr, "failed to generate a child\n");
 			}
@@ -190,7 +197,7 @@ void generate_child(Situ *s) {
 			if (!_appears(s)) {
 				tmp = _copy_Situ(s);
 				if (tmp) 
-					push(open, tmp);
+					s->child[num_of_child ++] = tmp;
 				else 
 					fprintf(stderr, "failed to generate a child\n");
 			}
@@ -200,10 +207,41 @@ void generate_child(Situ *s) {
 			fprintf(stderr, "struct.c: generate_child(): invalid value of j: %d\n", j);
 			break;
 	}
+}
 
-	/* sort the 'open' space to make the child nodes with 
-		lower value to be earlier to be popped out */
-	sort(open);
+void _mark_nodes(Space *sp) {
+	int i;
+	Situ *tmp;
+
+	if (sp) {
+		for (i = 0; i < sp->p; i ++) {
+			tmp = sp->stack[i];
+			/* mark the node and its ancestors as sign = 1 */
+			while (tmp) {
+				tmp->sign = 1;
+				tmp = tmp->parent;
+			}
+		}
+	}
+}
+
+/* delete all the nodes on the tree with sign = 0 */
+void _delete_nodes(Situ *root) {
+	int i;
+
+	if (root) {
+		for (i = 0; i < 4; i ++) 
+			_delete_nodes(root->child[i]);
+		if (root->sign == 0) 
+			free(root);
+	}
+}
+
+void clean_tree(Situ *root, Space *sp) {
+	if (root) {
+		_mark_nodes(sp);
+		_delete_nodes(root);
+	}
 }
 
 int exists(Space *sp, Situ *si) {
@@ -212,12 +250,12 @@ int exists(Space *sp, Situ *si) {
 	if (sp != NULL) {
 		for (i = 0; i < sp->p; i ++) 
 			if (si == sp->stack[i]) 
-				return 1;	/* element found */
+				return i;	/* element found */
 	}
 
-	/* here we define the default value to be 0, no matter if sp 
+	/* here we define the default value to be -1, no matter if sp 
 		or si is null. no error information will be given */
-	return 0;
+	return -1;
 }
 
 Space *create_space(void) {
@@ -246,16 +284,35 @@ Situ *pop(Space *sp) {
 	return NULL;
 }
 
-void push(Space *sp, Situ *si) {
+#define REDUCE_SIZE 100
+
+/* reduce the nodes in the space, keep only the top REDUCE_SIZE nodes 
+	with a lower value */
+void _reduce(Space *sp) {
+	int i;
+	
+	if (sp) {
+		if (sp->p <= REDUCE_SIZE * 2) 
+			return ;	/* the capacity of the stack is less than REDUCE_SIZE */
+		i = sp->p - REDUCE_SIZE;
+		for (sp->p = 0; sp->p < REDUCE_SIZE; sp->p ++) 
+			sp->stack[sp->p] = sp->stack[i ++];
+	}
+}
+
+int push(Space *sp, Situ *si) {
 	if (sp != NULL && si != NULL) {
 		printf("push(): p = %d\n", sp->p);
 		if (sp->p >= STACK_SIZE) {
-			fprintf(stderr, "struct.c: push(): stack out of size\n");
-			exit(-1);
+			_reduce(sp);	/* if the stack is full, remove the bottom nodes to make space */
+			sp->stack[sp->p ++] = si;
+			return 1;	/* return 1 to show that the stack is recently reduced */
 		}
 		else 
 			sp->stack[sp->p ++] = si;
 	}
+
+	return 0;
 }
 
 void _swap_situ_p(Situ **a, Situ **b) {

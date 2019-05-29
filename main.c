@@ -11,8 +11,7 @@
 
 Situ *root = NULL;
 Space *record = NULL;	/* for recording the final path */
-Space *open = NULL;
-Space *close = NULL;
+Space *open = NULL;	/* the space storing the unspawned nodes */
 
 /* 
 void _initialize_seed(long seed) {
@@ -52,12 +51,12 @@ void _initialize_assign(void) {
 	printf("input done\n");
 	root = create_root(board);
 	open = create_space();
-	close = create_space();
 	record = create_space();
 }
 
 int main(void) {
 	Situ *tmp = NULL;
+	int i;
 
 	_initialize_assign();
 
@@ -67,10 +66,14 @@ int main(void) {
 		//printf("\e[31mcurrent node\e[0m:\n");
 		//show_Situ(tmp);
 		generate_child(tmp);
+		for (i = 0; i < 4; i ++) {
+			if (tmp->child[i] != NULL) 
+				if (push(open, tmp->child[i])) 
+					clean_tree(root, open);
+		}
 		//printf("after generation\n");
 		//printf("\e[31mopen space\e[0m:\n");
 		//check_stack(open);
-		push(close, tmp);
 		tmp = pop(open);
 	}
 	if (tmp == NULL) {
