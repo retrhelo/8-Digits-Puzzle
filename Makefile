@@ -8,4 +8,4 @@ main: $(OBJ)
 	cc -c *.o
 
 clean: 
-	rm $(OBJ)
+	rm $(OBJ) main

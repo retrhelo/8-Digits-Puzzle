@@ -28,6 +28,9 @@ Situ *create_root(int board[3][3]) {
 int evaluate(Situ *s) {
 	int value = 0;
 	
+	if (s == NULL) 
+		return -1;
+
 	/* force to calculate the value of the board */
 	if (s->board[0][0] != 1) 
 		value ++;
@@ -47,6 +50,7 @@ int evaluate(Situ *s) {
 		value ++;
 	if (s->board[1][1] != 0) 
 		value ++;
+	s->match = value;
 	value += s->level;
 	s->value = value;
 	return value;
@@ -265,7 +269,7 @@ void _swap_situ_p(Situ **a, Situ **b) {
 }
 
 void sort(Space *sp) {
-	int i, j;
+	int i, j, h;
 
 	if (sp == NULL) 
 		return ;
@@ -276,4 +280,12 @@ void sort(Space *sp) {
 				_swap_situ_p(&(sp->stack[j]), &(sp->stack[j + 1]));
 		}
 	}
+	i = sp->p - 2;
+	while (sp->stack[i--]->value == sp->stack[sp->p - 1]->value) 
+		;
+	i ++;
+	for (j = sp->p - 1; j > i; j --) 
+		for (h = i; h < j; h ++) 
+			if (sp->stack[h]->match < sp->stack[h + 1]->match) 
+				_swap_situ_p(&(sp->stack[h]), &(sp->stack[h + 1]));
 }

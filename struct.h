@@ -3,6 +3,7 @@
 
 typedef struct situtaion {
 	int board[3][3];		/* the current state of board */
+	int match;			/* how well the nodes matches the final situation */
 	int value;			/* the value evaluated */
 	int level;			/* height of the node in the tree */
 	struct situation *parent;	/* its parent */
