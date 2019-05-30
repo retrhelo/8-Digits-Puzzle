@@ -209,16 +209,16 @@ void generate_child(Situ *s) {
 	}
 }
 
-void _mark_nodes(Space *sp) {
+void _mark_nodes(Space *sp, int mark) {
 	int i;
 	Situ *tmp;
 
 	if (sp) {
 		for (i = 0; i < sp->p; i ++) {
 			tmp = sp->stack[i];
-			/* mark the node and its ancestors as sign = 1 */
+			/* mark the node and its ancestors as sign = mark */
 			while (tmp) {
-				tmp->sign = 1;
+				tmp->sign = mark;
 				tmp = tmp->parent;
 			}
 		}
@@ -227,11 +227,11 @@ void _mark_nodes(Space *sp) {
 
 /* delete all the nodes on the tree with sign = 0 */
 void _delete_nodes(Situ *root) {
-	int i;
+	int i = 0;
 
 	if (root) {
-		for (i = 0; i < 4; i ++) 
-			_delete_nodes(root->child[i]);
+		while (root->child[i]) 
+			_delete_nodes(root->child[i ++]);
 		if (root->sign == 0) 
 			free(root);
 	}
@@ -239,9 +239,11 @@ void _delete_nodes(Situ *root) {
 
 void clean_tree(Situ *root, Space *sp) {
 	if (root) {
-		_mark_nodes(sp);
+		_mark_nodes(sp, 1);
 		_delete_nodes(root);
+		_mark_nodes(sp, 0);
 	}
+	printf("clean\n");
 }
 
 int exists(Space *sp, Situ *si) {
