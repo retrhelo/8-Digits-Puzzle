@@ -27,31 +27,30 @@ Situ *create_root(int board[3][3]) {
 	return begin;
 }
 
+#define LEVEL_INTERVAL 5
+#define LEVEL_WEIGH 2
+
+const int target_board[3][3] = {
+	{1, 2, 3}, 
+	{8, 0, 4}, 
+	{7, 6, 5}
+};
+
 /* evaluate the value for s */
 int evaluate(Situ *s) {
 	int value = 0;
+	int i, j;
 	
-	/* force to calculate the value of the board */
-	if (s->board[0][0] != 1) 
-		value ++;
-	if (s->board[0][1] != 2) 
-		value ++;
-	if (s->board[0][2] != 3) 
-		value ++;
-	if (s->board[1][2] != 4) 
-		value ++;
-	if (s->board[2][2] != 5) 
-		value ++;
-	if (s->board[2][1] != 6) 
-		value ++;
-	if (s->board[2][0] != 7) 
-		value ++;
-	if (s->board[1][0] != 8) 
-		value ++;
-	if (s->board[1][1] != 0) 
-		value ++;
-	value += s->level;
-	s->value = value;
+	if (s) {
+		for (i = 0; i < 3; i ++) 
+			for (j = 0; j < 3; j ++) 
+				if (s->board[i][j] != target_board[i][j]) 
+					value ++;
+		value += value * (s->level / LEVEL_INTERVAL * LEVEL_WEIGH);
+		value += s->level;
+		s->value = value;
+	}
+
 	return value;
 }
 
@@ -276,7 +275,7 @@ Space *create_space(void) {
 
 Situ *pop(Space *sp) {
 	if (sp != NULL) {
-		printf("pop(): p = %d\n", sp->p);
+		//printf("pop(): p = %d\n", sp->p);
 		if (sp->p <= 0) 
 			fprintf(stderr, "struct.c: pop(): stack is empty\n");
 		else 
@@ -304,7 +303,7 @@ void _reduce(Space *sp) {
 
 int push(Space *sp, Situ *si) {
 	if (sp != NULL && si != NULL) {
-		printf("push(): p = %d\n", sp->p);
+		//printf("push(): p = %d\n", sp->p);
 		if (sp->p >= STACK_SIZE) {
 			_reduce(sp);	/* if the stack is full, remove the bottom nodes to make space */
 			sp->stack[sp->p ++] = si;
@@ -324,7 +323,7 @@ void _swap_situ_p(Situ **a, Situ **b) {
 }
 
 void sort(Space *sp) {
-	int i, j;
+	int i, j, h;
 
 	if (sp == NULL) 
 		return ;

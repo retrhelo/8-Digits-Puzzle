@@ -56,7 +56,7 @@ void _initialize_assign(void) {
 
 int main(void) {
 	Situ *tmp = NULL;
-	int i;
+	int counter = 0;
 
 	_initialize_assign();
 
@@ -66,11 +66,7 @@ int main(void) {
 		//printf("\e[31mcurrent node\e[0m:\n");
 		//show_Situ(tmp);
 		generate_child(tmp);
-		for (i = 0; i < 4; i ++) {
-			if (tmp->child[i] != NULL) 
-				if (push(open, tmp->child[i])) 
-					clean_tree(root, open);
-		}
+		counter ++;
 		//printf("after generation\n");
 		//printf("\e[31mopen space\e[0m:\n");
 		//check_stack(open);
@@ -84,6 +80,7 @@ int main(void) {
 		push(record, tmp);
 		tmp = tmp->parent;
 	}
+	printf("totally nodes spawned: %d\n", counter);
 	show_record(record);
 
 	return 0;
