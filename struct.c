@@ -280,12 +280,4 @@ void sort(Space *sp) {
 				_swap_situ_p(&(sp->stack[j]), &(sp->stack[j + 1]));
 		}
 	}
-	i = sp->p - 2;
-	while (sp->stack[i--]->value == sp->stack[sp->p - 1]->value) 
-		;
-	i ++;
-	for (j = sp->p - 1; j > i; j --) 
-		for (h = i; h < j; h ++) 
-			if (sp->stack[h]->match < sp->stack[h + 1]->match) 
-				_swap_situ_p(&(sp->stack[h]), &(sp->stack[h + 1]));
 }
