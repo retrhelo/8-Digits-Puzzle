@@ -236,7 +236,7 @@ Space *create_space(void) {
 
 Situ *pop(Space *sp) {
 	if (sp != NULL) {
-		printf("pop(): p = %d\n", sp->p);
+		//printf("pop(): p = %d\n", sp->p);
 		if (sp->p <= 0) 
 			fprintf(stderr, "struct.c: pop(): stack is empty\n");
 		else 
@@ -248,7 +248,7 @@ Situ *pop(Space *sp) {
 
 void push(Space *sp, Situ *si) {
 	if (sp != NULL && si != NULL) {
-		printf("push(): p = %d\n", sp->p);
+		//printf("push(): p = %d\n", sp->p);
 		if (sp->p >= STACK_SIZE) {
 			fprintf(stderr, "struct.c: push(): stack out of size\n");
 			exit(-1);

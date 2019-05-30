@@ -64,8 +64,8 @@ int main(void) {
 	tmp = root;
 	
 	while (tmp != NULL && tmp->level != tmp->value) {
-		//printf("\e[31mcurrent node\e[0m:\n");
-		//show_Situ(tmp);
+		printf("\e[31mcurrent node\e[0m:\n");
+		show_Situ(tmp);
 		generate_child(tmp);
 		//printf("after generation\n");
 		//printf("\e[31mopen space\e[0m:\n");
